@@ -43,14 +43,18 @@ namespace PoorMan.SSE.Middleware {
                     var queue = new BlockingCollection<string>();
                     _connections[id] = queue;
 
+                    // Send connection information to client
+                    await context.Response.WriteSSEAsync($"connection", new Models.ConnectionInfo {
+                        Id = id
+                    }, context.RequestAborted);
+
                     // Keep streaming out notifications until client disconnects
                     try { while (!context.RequestAborted.IsCancellationRequested) {
                         // Wait for a notification
                         var message = queue.Take(context.RequestAborted);
 
-                        // Send the notification to the client
-                        await context.Response.WriteAsync($"data: {message}\r\r", context.RequestAborted);
-                        await context.Response.Body.FlushAsync(context.RequestAborted);
+                        // Send the message to the client
+                        await context.Response.WriteSSEAsync(message, context.RequestAborted);
                     }
 
                     // Always unsubscribe
