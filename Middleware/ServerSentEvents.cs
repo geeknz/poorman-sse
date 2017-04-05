@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using PoorMan.SSE.Extensions;
 using PoorMan.SSE.Impl;
 using PoorMan.SSE.Interface;
-using PoorMan.SSE.Models;
 
 namespace PoorMan.SSE.Middleware {
 
@@ -14,7 +13,6 @@ namespace PoorMan.SSE.Middleware {
 
         public static IServiceCollection AddServerSentEvents(this IServiceCollection services) {
             return services
-                .AddSingleton<EventDispatcher>()
                 .AddSingleton<IEventDispatcher, EventDispatcher>();
         }
 
@@ -28,9 +26,9 @@ namespace PoorMan.SSE.Middleware {
 
             private readonly EventDispatcher _dispatcher;
 
-            public Middleware(RequestDelegate next, EventDispatcher dispatcher) {
+            public Middleware(RequestDelegate next, IEventDispatcher dispatcher) {
                 _next = next;
-                _dispatcher = dispatcher;
+                _dispatcher = dispatcher as EventDispatcher;
             }
 
             public async Task Invoke(HttpContext context) {
